@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	   xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	   xmlns:mybatis-spring="http://mybatis.org/schema/mybatis-spring"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://mybatis.org/schema/mybatis-spring http://mybatis.org/schema/mybatis-spring.xsd">
+	
+	<!-- Root Context: defines shared resources visible to all other web components -->
+
+	<context:property-placeholder location="classpath:properties/*.properties"/>
+
+	<bean id="hikariConfig" class="com.zaxxer.hikari.HikariConfig">
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="jdbcUrl" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+		<!-- 최대 유지 할 수 있는 커넥션 개수 default=10 -->
+		<property name="maximumPoolSize" value="200"/>
+		<!-- 일을 하지 않아도 유지하는 최소 connection 개수 -->
+		<property name="minimumIdle" value="20"/>
+		<!-- pool 에서 connection 정보를 가져오는 최소 시간 default= 250ms -->
+		<property name="connectionTimeout" value="300000"/>
+		<!-- pool에서 일을 안하는 커넥션을 대기(유지) 하는 시간 default=60000ms -->
+		<property name="idleTimeout" value="200000"/>
+	</bean>
+
+
+	<bean id="ds" class="com.zaxxer.hikari.HikariDataSource">
+		<constructor-arg ref="hikariConfig"/>
+	</bean>
+
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="ds"/>
+	</bean>
+
+	<mybatis-spring:scan base-package="com.kidsworld.mvc.dao"/>
+
+	<!--제대로 입력되지 않거나 오류가 날 경우 롤백처리를 해주는 장치-->
+	<bean id="transactionManager"
+		  class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="ds"/>
+	</bean>
+
+	<tx:annotation-driven/>
+
+	<bean id="mailSender"
+		  class="org.springframework.mail.javamail.JavaMailSenderImpl">
+		<property name="host" value="smtp.gmail.com"/>
+		<property name="port" value="587" />
+		<property name="username" value="mickboy9959@gmail.com" />
+		<property name="password" value="xkzsxarqkfhbidaw"/>
+		<property name="javaMailProperties">
+			<props>
+				<prop key="mail.transport.protocol">smtp</prop>
+				<prop key="mail.smtp.auth">true</prop>
+				<prop key="mail.smtp.starttls.enable">true</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="uploadPath" class="java.lang.String">
+		<constructor-arg value="upload"/>
+	</bean>
+
+	<!--서블릿이 아니라 root에서 설정해야 filter가 알아들을 수 있다.-->
+	<!--
+		기존에 서블릿에서 처리한 이유는 2진 바이너리를 필터에서 딱히 처리하지 않고 그냥 받아서 사용했는데,
+		지금은 토큰을 인식해야 작업이 처리되기 때문에 그에 따른 필터작업이 필요하다.
+	-->
+	<bean id="filterMultipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="10485760"/>
+		<property name="defaultEncoding" value="UTF-8"/>
+	</bean>
+
+	<context:component-scan base-package="com.kidsworld.mvc.service"/>
+
+</beans>

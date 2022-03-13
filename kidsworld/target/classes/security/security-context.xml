@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:security="http://www.springframework.org/schema/security"
+       xsi:schemaLocation="http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--암호화를 사용하지 않음 : 위험함-->
+    <!--<bean class="org.springframework.security.crypto.password.NoOpPasswordEncoder"/>-->
+
+    <!--sha-256 암호화방식 : 파훼되었음-->
+    <!--<bean class="org.springframework.security.crypto.password.StandardPasswordEncoder"/>-->
+
+    <!--scrypt 해쉬 알고리즘 소수를 이용한 암호화 방식 : 유용함-->
+    <!--Bcrypt라고 함-->
+    <bean id="bcryptPasswordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder"/>
+
+    <!--
+        security:authentication-manager가 로그인 기능을 구현하는데 인증을 참조할 클래스
+    -->
+    <bean id="customUserService" class="com.kidsworld.mvc.security.user.CustomUserDetailService" />
+    <!--위는 시큐리티가 유저를 담는 객체라고 보면 된다.-->
+
+    <bean id="loginSuccessHandler" class="com.kidsworld.mvc.security.LoginSuccessHandler"/>
+    <!--로그인 성공 시 토스 될 bean-->
+    <bean id="loginFailHandler" class="com.kidsworld.mvc.security.CustomLoginFailHandler"/>
+    <!--로그인 실패 시 토스 될 bean-->
+    <bean id="accessDinedHandler" class="com.kidsworld.mvc.security.CustomAccessDeniedHandler"/>
+    <!--접근 거부 시 토스 될 bean-->
+
+    <security:http auto-config="true" use-expressions="true">
+
+        <!--<security:csrf disabled="true"/>-->
+        <!-- csrf token 사용 안함 -->
+
+        <security:remember-me
+                remember-me-cookie="userCookie"
+                remember-me-parameter="rememberme"
+                token-validity-seconds="604800"
+        />
+        <!--자동로그인-->
+        <!--
+            remember-me-cookie		-쿠키 영역에 기입될 쿠키의 이름
+            remember-me-parameter	-form태그 내부 쿠키의 name값
+            token-validity-seconds	-쿠키유지시간
+            본래 쿠키는 사용자의 컴퓨터에 저장되어 서버의 그것과 상관없이 돌아가야하지만,
+            security의 경우 서버의 메모리에 저장되고 있기 때문에
+            서버가 종료될 경우 쿠키도 사라지니, 자동로그인에 대한 정보도 유실되게 된다.
+        -->
+
+
+        <security:session-management>
+            <security:concurrency-control
+                    error-if-maximum-exceeded="false"
+                    max-sessions="1"
+                    expired-url="/user/logOff"
+            />
+        </security:session-management>
+        <!--중복로그인 방지 관련-->
+        <!--
+            error-if-maximum-exceeded="true"	-이미 로그인한 대상이 있으면 2차 로그인 방지
+            error-if-maximum-exceeded="false"	-기존 연결을 끊고 로그인
+            max-sessions						-최대 로그인 가능 세션
+            expired-url							-기존 사용자가 새로운 로그인 때문에 연결이 끊기고 튕길 때(url은 컨트롤러 지정)
+        -->
+
+        <security:form-login
+                login-page="/user/login"
+                username-parameter="uId"
+                password-parameter="uPassword"
+                login-processing-url="/user/login"
+                authentication-success-handler-ref="loginSuccessHandler"
+                authentication-failure-handler-ref="loginFailHandler"
+        />
+        <!--
+            login-page="/user/login"은 인가정보가 없는 사람이 페이지를 요청하면 이쪽을 띄워준다는 의미.
+            authentication-success-handler-ref - 로그인 성공시 작동하는 클래스 - 위에서 bean으로 추가해줌
+            authentication-failure-handler-ref - 로그인 실패시 작동하는 클래스 - 위에서 bean으로 추가해줌
+        -->
+
+        <security:logout
+                logout-url="/user/logout"
+                logout-success-url="/"
+                delete-cookies="userCookie, JSESSIONID"
+        />
+
+        <security:intercept-url pattern="/master/**"
+                                access="hasAnyRole('ROLE_MASTER')"
+        />
+        <!--
+            url에 따른 권한확인
+            access	-어떤 권한을 확인할지
+        -->
+
+        <security:access-denied-handler ref="accessDinedHandler"/>
+    </security:http>
+
+
+
+    <security:authentication-manager>
+        <!--bean customUserService를 통해 아이디 비밀번호 사용자비교-->
+        <security:authentication-provider user-service-ref="customUserService">
+            <!--패스워드 인코딩 정보 : 복호화를 하는 게 아니라서 암호화 방식을 말해줘야 대치를 알아볼 수 있다.-->
+            <security:password-encoder ref="bcryptPasswordEncoder"/>
+        </security:authentication-provider>
+    </security:authentication-manager>
+
+</beans>

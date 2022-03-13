@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kidsworld.mvc.dao.CommunityDAO">
+
+    <!--공지사항 리스트 불러오기-->
+    <!--List<NoticeVO> noticeList(Criteria cri) throws Exception;-->
+    <select id="noticeList" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="com.kidsworld.mvc.commons.vo.NoticeVO">
+        SELECT * FROM kidslandNotice WHERE nDelete = 'N' ORDER BY nNum DESC LIMIT #{pageStart}, #{perPageNum};
+    </select>
+
+    <!--공지사항 총 갯수 불러오기(pm제작)-->
+    <!--int listCount(Criteria cri) throws Exception;-->
+    <select id="listNoticeCount" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="int">
+        SELECT count(*) FROM kidslandNotice WHERE nDelete = 'N';
+    </select>
+
+    <!--공지사항 쓰기-->
+    <!--void noticeWrite(NoticeVO vo);-->
+    <insert id="noticeWrite" parameterType="com.kidsworld.mvc.commons.vo.NoticeVO">
+        INSERT INTO kidslandNotice(nCategory, nWriter, nTitle, nContent)
+         VALUES(#{nCategory}, #{nWriter}, #{nTitle}, #{nContent})
+    </insert>
+
+    <!--공지사항 읽기-->
+    <!--NoticeVO noticeRead(int nNum);-->
+    <select id="noticeRead" parameterType="int" resultType="com.kidsworld.mvc.commons.vo.NoticeVO">
+        SELECT * FROM kidslandNotice WHERE nNum = #{nNum}
+    </select>
+
+    <!--공지사항 수정 제출-->
+    <!--void noticeModify(NoticeVO vo);-->
+    <update id="noticeModify" parameterType="com.kidsworld.mvc.commons.vo.NoticeVO">
+        UPDATE kidslandNotice SET nCategory = #{nCategory}, nWriter = #{nWriter}, nTitle = #{nTitle}, nContent = #{nContent} WHERE nNum = #{nNum}
+    </update>
+
+    <!--공지사항 삭제-->
+    <!--void noticeDelete(int nNum);-->
+    <update id="noticeDelete" parameterType="int">
+        UPDATE kidslandNotice SET nDelete = 'Y' WHERE nNum = #{nNum}
+    </update>
+
+    <!--질의응답 리스트 불러오기-->
+    <!--List<QnaVO> qnaList(Criteria cri);-->
+    <select id="qnaList" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="com.kidsworld.mvc.commons.vo.QnaVO">
+        SELECT * FROM kidslandQna WHERE qDelete = 'N' ORDER BY origin DESC, seq ASC LIMIT #{pageStart}, #{perPageNum}
+    </select>
+
+    <!--질의응답 총 갯수 불러오기(pm제작)-->
+    <!--int listQnaCount(Criteria cri) throws Exception;-->
+    <select id="listQnaCount" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="int">
+        SELECT count(*) FROM kidslandQna WHERE qDelete = 'N';
+    </select>
+
+    <!--질의 쓰기-->
+    <!--void qnaWrite(QnaVO vo);-->
+    <insert id="qnaWrite" parameterType="com.kidsworld.mvc.commons.vo.QnaVO">
+        INSERT INTO kidslandQna(qTitle, qWriter, qContent, qUserNum) VALUES(#{qTitle}, #{qWriter}, #{qContent}, #{qUserNum})
+    </insert>
+
+    <!--질의 절대값 설정-->
+    <!--void updateOrigin()-->
+    <update id="updateOrigin" >
+        UPDATE kidslandQna SET origin = LAST_INSERT_ID() WHERE qNum = LAST_INSERT_ID();
+    </update>
+
+    <!--질의 & 응답 읽기-->
+    <!--QnaVO qnaRead(int qNum);-->
+    <select id="qnaRead" parameterType="int" resultType="com.kidsworld.mvc.commons.vo.QnaVO">
+        SELECT * FROM kidslandQna WHERE qNum = #{qNum}
+    </select>
+
+    <!--응답 작성시 답글들을 재정렬해주는 작업을 한 번 거친다.-->
+    <!--void updateReply(QnaVO vo);-->
+    <!--최신 답변글이 들어오는 관계로, 기존 답글들의 정렬값을 수정-->
+    <!--다만 답글의 답글은 가장 위로 가지 않고 해당 답글의 가장 위로 가기 때문에, seq값 비교가 들어간다-->
+    <update id="updateReply" parameterType="com.kidsworld.mvc.commons.vo.QnaVO">
+        UPDATE kidslandQna SET seq = seq + 1 WHERE origin = #{origin} AND seq > #{seq}
+    </update>
+
+    <!--응답 작성-->
+    <!--void qnaReplyWrite(QnaVO vo);-->
+    <insert id="qnaReplyWrite" parameterType="com.kidsworld.mvc.commons.vo.QnaVO">
+        INSERT INTO kidslandQna(qTitle, qWriter, qContent, origin, depth, seq, qUserNum)
+         VALUES(#{qTitle}, #{qWriter}, #{qContent}, #{origin}, #{depth}, #{seq}, #{qUserNum})
+    </insert>
+
+    <!--응답 수정 제출-->
+    <!--void qnaModify(QnaVO vo);-->
+    <update id="qnaModify" parameterType="com.kidsworld.mvc.commons.vo.QnaVO">
+        UPDATE kidslandQna SET qTitle = #{qTitle}, qWriter = #{qWriter}, qContent = #{qContent} WHERE qNum = #{qNum}
+    </update>
+
+    <!--응답 삭제-->
+    <!--void deleteModify(QnaVO vo);-->
+    <update id="qnaDelete" parameterType="int">
+        UPDATE kidslandQna SET qDelete = 'Y' WHERE qNum = #{qNum}
+    </update>
+
+    <!--리뷰 리스트 불러오기-->
+    <!--List<ReviewVO> reviewList(Criteria cri);-->
+    <select id="reviewList" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="com.kidsworld.mvc.commons.vo.ReviewVO">
+        SELECT * FROM kidslandReview WHERE rDelete = 'N' ORDER BY rNum DESC LIMIT #{pageStart}, #{perPageNum}
+    </select>
+
+    <!--리뷰 총 갯수불러오기(pm제작)-->
+    <!--int listReviewCount(Criteria cri);-->
+    <select id="listReviewCount" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="int">
+        SELECT count(*) FROM kidslandReview WHERE rDelete = 'N';
+    </select>
+
+    <!--리뷰 작성하기-->
+    <!--void reviewWrite(ReviewVO vo);-->
+    <insert id="reviewWrite" parameterType="com.kidsworld.mvc.commons.vo.ReviewVO">
+        INSERT INTO kidslandReview(rTitle, rWriter, rPoint, rContent, rUserNum) VALUES(#{rTitle}, #{rWriter}, #{rPoint}, #{rContent}, #{rUserNum})
+    </insert>
+
+    <!--리뷰 보기-->
+    <!--ReviewVO reviewRead(int rNum) throws Exception;-->
+    <select id="reviewRead" parameterType="int" resultType="com.kidsworld.mvc.commons.vo.ReviewVO">
+        SELECT * FROM kidslandReview WHERE rNum = #{rNum}
+    </select>
+
+    <!--리뷰 수정하기-->
+    <!--void reviewModify(ReviewVO vo);-->
+    <update id="reviewModify" parameterType="com.kidsworld.mvc.commons.vo.ReviewVO">
+        UPDATE kidslandReview SET rTitle = #{rTitle}, rWriter = #{rWriter}, rContent = #{rContent} WHERE rNum = #{rNum}
+    </update>
+
+    <!--리뷰 삭제-->
+    <!--void reviewDelete(int rNum);-->
+    <update id="reviewDelete" parameterType="int">
+        UPDATE kidslandReview SET rDelete = 'Y' WHERE rNum = #{rNum}
+    </update>
+
+    <!--메인페이지 리뷰 불러오기-->
+    <!--List<ReviewVO> reviewBestList(Criteria cri);-->
+    <select id="reviewBestList" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="com.kidsworld.mvc.commons.vo.ReviewVO">
+        SELECT * FROM kidslandReview WHERE rDelete = 'N' ORDER BY rPoint DESC LIMIT #{pageStart}, #{perPageNum}
+    </select>
+
+</mapper>

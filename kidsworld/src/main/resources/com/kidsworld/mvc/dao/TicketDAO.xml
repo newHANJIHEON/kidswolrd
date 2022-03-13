@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kidsworld.mvc.dao.TicketDAO">
+
+    <!--티켓구매-->
+    <!--void buyTicket(TicketVO vo) throws Exception;-->
+    <insert id="buyTicket" parameterType="com.kidsworld.mvc.commons.vo.TicketVO">
+        INSERT INTO kidslandTicket(forWho, forWhen, uName, uPhoneNum, uId, market, tArea)
+         VALUES(#{forWho}, #{forWhen}, #{uName}, #{uPhoneNum}, #{uId}, #{market}, #{tArea})
+    </insert>
+
+    <!--(고객 기준)이미 구매한 티켓 반품하기-->
+    <!--void refundTicket(TicketVO vo) throws Exception;-->
+    <update id="refundTicket" parameterType="com.kidsworld.mvc.commons.vo.TicketVO">
+        UPDATE kidslandTicket SET used = 'R', useDate = NOW() WHERE tNum = #{tNum}
+    </update>
+
+    <!--티켓목록 페이지 구성을 위한 전체 티켓갯수 구하기-->
+    <!--지정값을 받았을 때, 지정값(고객의 이름이나 번호 + 미사용 티켓일 것)에 의해 티켓갯수가 달라지니-->
+    <!--동적쿼리문을 사용한다.-->
+    <!--int ticketListCount(Criteria cri) throws Exception;-->
+    <select id="ticketListCount" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="int">
+        SELECT count(*) FROM kidslandTicket
+            <choose>
+                <when test='searchType == "p"'>
+                    WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND used = 'N';
+                </when>
+                <when test='searchType == "n"'>
+                    WHERE uName LIKE concat('%', #{uName}, '%') AND used = 'N';
+                </when>
+                <when test='searchType == "pn"'>
+                    WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND uName = #{uName} AND used = 'N';
+                </when>
+                <otherwise>
+                    WHERE used = 'N' ORDER BY tNum DESC;
+                </otherwise>
+            </choose>
+    </select>
+
+    <!--티켓목록 보기-->
+    <!--위헤서 구성한 페이지 메이커를 토대로 하여,-->
+    <!--들어갈 정보값 = 즉 지정값의 해당 고객이 구매한 티켓리스트를 구성하여 전달한다.-->
+    <!--휴대폰 뒷자리, 이름 등으로 검색하여 List를 받는다.-->
+    <!--아직 '미사용인 티켓 리스트'를 받아야 한다.-->
+    <!--List<TicketVO> customerTicketList(Criteria cri) throws Exception;-->
+    <select id="ticketList" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="com.kidsworld.mvc.commons.vo.TicketVO">
+        SELECT * FROM kidslandTicket
+        <choose>
+            <when test='searchType == "p"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND used = 'N' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <when test='searchType == "n"'>
+                WHERE uName LIKE concat('%', #{uName}, '%') AND used = 'N' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <when test='searchType == "pn"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND uName = #{uName} AND used = 'N' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <otherwise>
+                WHERE used = 'N' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--티켓 사용처리-->
+    <!--티켓 번호를 받아 사용처리를 진행한다.-->
+    <!--void useTicket(TicketVO vo) throws Exception;-->
+    <update id="useTicket" parameterType="com.kidsworld.mvc.commons.vo.TicketVO">
+        UPDATE kidslandTicket SET used = 'Y', useDate = NOW() WHERE tNum = #{tNum}
+    </update>
+
+    <!--사용처리된 티켓 보기-->
+    <!--List<TicketVO> usedTicketList(Criteria cri) throws Exception;-->
+    <select id="usedTicketList" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="com.kidsworld.mvc.commons.vo.TicketVO">
+        SELECT * FROM kidslandTicket
+        <choose>
+            <when test='searchType == "p"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND used = 'Y' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <when test='searchType == "n"'>
+                WHERE uName LIKE concat('%', #{uName}, '%') AND used = 'Y' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <when test='searchType == "pn"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND uName = #{uName} AND used = 'Y' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <otherwise>
+                WHERE used = 'Y' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--사용처리된 티켓목록 페이지 구성을 위한 전체 티켓갯수 구하기-->
+    <!--int usedTicketListCount(Criteria cri);-->
+    <select id="usedTicketListCount" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="int">
+        SELECT count(*) FROM kidslandTicket
+        <choose>
+            <when test='searchType == "p"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND used = 'Y';
+            </when>
+            <when test='searchType == "n"'>
+                WHERE uName LIKE concat('%', #{uName}, '%') AND used = 'Y';
+            </when>
+            <when test='searchType == "pn"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND uName = #{uName} AND used = 'Y';
+            </when>
+            <otherwise>
+                WHERE used = 'Y';
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--사용처리된 티켓 되돌리기-->
+    <!--void rollbackTicket(TicketVO vo) throws Exception;-->
+    <update id="rollbackTicket" parameterType="com.kidsworld.mvc.commons.vo.TicketVO">
+        UPDATE kidslandTicket SET used = 'N', useDate = NULL WHERE tNum = #{tNum}
+    </update>
+
+    <!--반품처리된 티켓 보기-->
+    <!--List<TicketVO> refundTicketList(Criteria cri) throws Exception;-->
+    <select id="refundTicketList" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="com.kidsworld.mvc.commons.vo.TicketVO">
+        SELECT * FROM kidslandTicket
+        <choose>
+            <when test='searchType == "p"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND used = 'R' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <when test='searchType == "n"'>
+                WHERE uName LIKE concat('%', #{uName}, '%') AND used = 'R' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <when test='searchType == "pn"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND uName = #{uName} AND used = 'R' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </when>
+            <otherwise>
+                WHERE used = 'R' ORDER BY sellDate DESC LIMIT #{pageStart}, #{perPageNum};
+            </otherwise>
+        </choose>
+    </select>
+
+    <!--반품처리된 티켓목록 페이지 구성을 위한 전체 티켓갯수 구하기-->
+    <!--int refundTicketListCount(Criteria cri);-->
+    <select id="refundTicketListCount" parameterType="com.kidsworld.mvc.commons.utils.Criteria" resultType="int">
+        SELECT count(*) FROM kidslandTicket
+        <choose>
+            <when test='searchType == "p"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND used = 'R';
+            </when>
+            <when test='searchType == "n"'>
+                WHERE uName LIKE concat('%', #{uName}, '%') AND used = 'R';
+            </when>
+            <when test='searchType == "pn"'>
+                WHERE uPhoneNum LIKE concat('%', #{uPhoneNum}, '%') AND uName = #{uName} AND used = 'R';
+            </when>
+            <otherwise>
+                WHERE used = 'R';
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="selectAllDayAdult" parameterType="String" resultType="int">
+        SELECT count(*) FROM kidslandTicket WHERE forWhen = '종일권' AND forWho = '성인' AND used = 'Y' AND DATE(useDate) = #{date}
+    </select>
+
+    <select id="selectAllDayKid" parameterType="String" resultType="int">
+        SELECT count(*) FROM kidslandTicket WHERE forWhen = '종일권' AND forWho = '아동' AND used = 'Y' AND DATE(useDate) = #{date}
+    </select>
+
+    <select id="selectHalfDayAdult" parameterType="String" resultType="int">
+        SELECT count(*) FROM kidslandTicket WHERE forWhen = '오후권' AND forWho = '성인' AND used = 'Y' AND DATE(useDate) = #{date}
+    </select>
+
+    <select id="selectHalfDayKid" parameterType="String" resultType="int">
+        SELECT count(*) FROM kidslandTicket WHERE forWhen = '오후권' AND forWho = '아동' AND used = 'Y' AND DATE(useDate) = #{date}
+    </select>
+
+    <select id="totalAllDayAdult" parameterType="String" resultType="int">
+        SELECT count(*) FROM kidslandTicket WHERE forWhen = '종일권' AND forWho = '성인' AND used = 'Y';
+    </select>
+
+    <select id="totalAllDayKid" parameterType="String" resultType="int">
+        SELECT count(*) FROM kidslandTicket WHERE forWhen = '종일권' AND forWho = '아동' AND used = 'Y';
+    </select>
+
+    <select id="totalHalfDayAdult" parameterType="String" resultType="int">
+        SELECT count(*) FROM kidslandTicket WHERE forWhen = '오후권' AND forWho = '성인' AND used = 'Y';
+    </select>
+
+    <select id="totalHalfDayKid" parameterType="String" resultType="int">
+        SELECT count(*) FROM kidslandTicket WHERE forWhen = '오후권' AND forWho = '아동' AND used = 'Y';
+    </select>
+
+    <!--회원정보 변경으로 인한 티켓내용 변경-->
+    <!--void updateTicket(UserVO vo) throws Exception;-->
+    <update id="updateTicket" parameterType="com.kidsworld.mvc.commons.vo.UserVO">
+        UPDATE kidslandTicket SET uPhoneNum = #{uPhoneNum}, uName = #{uName} WHERE uId = #{uId}
+    </update>
+
+</mapper>

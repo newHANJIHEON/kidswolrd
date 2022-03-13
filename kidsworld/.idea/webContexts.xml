@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebContextManager">
+    <option name="state">
+      <map>
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/branch/kintex.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/branch" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/business.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/community/noticeModify.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/community" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/main.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/ticket/ticketInfo.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/ticket" />
+        <entry key="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/user/userUpdate.jsp" value="file://$PROJECT_DIR$/src/main/webapp/WEB-INF/views/user" />
+      </map>
+    </option>
+  </component>
+</project>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org/DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.kidsworld.mvc.dao.CommunityDAO">
+
+    <!--공지사항 리스트 불러오기-->
+    <!--List<NoticeVO> noticeList(Criteria cri) throws Exception;-->
+    <select id="noticeList" parameterType="com.kidsworld.mvc.commons.utils.Criteria">
+        SELECT * FROM kidslandNotice;
+    </select>
+
+    <!--공지사항 총 갯수 불러오기(pm제작)-->
+    <!--int listCount(Criteria cri) throws Exception;-->
+    <select id="listCount" parameterType="com.kidsworld.mvc.commons.utils.Criteria">
+        SELECT count(*) FROM kidslandNotice;
+    </select>
+
+    <!--공지사항 쓰기-->
+    <!--void noticeWrite(NoticeVO vo);-->
+    <insert id="noticeWrite" parameterType="com.kidsworld.mvc.commons.vo.NoticeVO">
+        INSERT INTO kidslandNotice(nCategory, nWriter, nTitle, nContent)
+         VALUES(#{nCategory}, #{nWriter}, #{nTitle}, #{nContent})
+    </insert>
+
+</mapper>
