@@ -8,10 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -198,6 +196,7 @@ public class UserController {
     public String updateSubmit(UserVO vo) throws Exception {
         //수정 정보가 로그아웃 후 재로그인 하기 전까지는 반영되지 않음
         //spring security의 세션을 갱신하지 못함
+        //따라서 securityContextHolder를 통한 세션정보 업데이트가 필요
         us.update(vo);
         String name = SecurityContextHolder.getContext().getAuthentication().getName();
         UserDetails user = cuds.loadUserByUsername(name);

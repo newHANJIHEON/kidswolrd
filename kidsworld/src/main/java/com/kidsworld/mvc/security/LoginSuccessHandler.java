@@ -21,7 +21,10 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
     UserService us;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(
+            HttpServletRequest httpServletRequest,
+            HttpServletResponse httpServletResponse,
+            Authentication authentication) throws IOException, ServletException {
         CustomMember member = (CustomMember) authentication.getPrincipal();
         System.out.println("member : " + member);
         UserVO vo = member.getMember();
